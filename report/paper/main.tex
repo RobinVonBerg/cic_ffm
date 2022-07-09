@@ -1,0 +1,108 @@
+\documentclass[11pt,oneside,headsepline,a4paper]{scrreprt}
+
+% PACKAGES
+\usepackage{graphicx}              % images
+\usepackage{xcolor}                % colors
+\usepackage{tabularx}              % tables
+\usepackage{scrlayer-scrpage}      % KOMA-Skript
+\usepackage{minted}                % code formatting
+\usepackage{scrhack}               % suppress deprecation warnings
+\usepackage[utf8]{inputenc}        % encoding translation 
+\usepackage{csquotes}              % quotations   
+\usepackage[ngerman]{babel}        % region specific formatting 
+\usepackage[T1]{fontenc}           % font encoding
+\usepackage[hidelinks]{hyperref}   % external links
+\usepackage[hypcap=false]{caption} % captions
+\usepackage[
+    backend=biber,
+    style=numeric
+]{biblatex}                     % manage bibliography
+\usepackage[
+    a4paper,
+    headheight=30pt,
+]{geometry}                     % page layout
+
+% VARIABLES
+\newcommand{\vcontext}{Cross-Innovation-Class 2022}
+\newcommand{\vprof}{Prof. Hoffmann}
+\newcommand{\vsubject}{Projektbericht Team Frankfurt}
+\newcommand{\vtitle}{TODO}
+\newcommand{\vsubtitle}{TODO Untertitel}
+\newcommand{\vauthor}{Sven Hülsen, Robin von Berg}
+
+% STYLE CHANGES
+\addtokomafont{pagehead}{\sffamily\color[rgb]{0.15,0.15,0.15}} 
+\addtokomafont{pagefoot}{\sffamily\color[rgb]{0.15,0.15,0.15}} 
+\addtokomafont{titlehead}{\sffamily} 
+\addtokomafont{subject}{\sffamily} 
+\addtokomafont{title}{\sffamily} 
+\addtokomafont{subtitle}{\sffamily} 
+\addtokomafont{author}{\sffamily} 
+\addtokomafont{date}{\sffamily} 
+\KOMAoptions{toc=indentunnumbered}
+
+% CAPTION MARGIN
+\captionsetup{margin=1.5cm}
+
+% MINTED BACKGROUND COLOR
+\definecolor{minted-bg}{rgb}{0.97,0.97,0.97}
+% NEEDED FOR CODE CAPTIONS
+\newenvironment{code}{\captionsetup{type=figure}}{\vspace{0.8cm}}
+% MINTED CONFIG
+\setminted {
+    bgcolor=minted-bg,
+    linenos,
+    tabsize=2,
+    breaklines
+}
+
+% BIB FILE
+\addbibresource{sources.bib}
+
+% HEADER
+\ihead*{
+    \begin{tabular}{ll} 
+    \vcontext{} \\
+    \vsubject{}
+    \end{tabular}
+}
+
+\rohead*{
+    \\ \vauthor{}
+}
+
+% FOOTER
+\cfoot*{\thepage}
+
+% DOCUMENT START
+\begin{document}
+
+\titlehead{\vcontext{}\\\vprof{}}
+\subject{\vsubject{}}
+\title{\vtitle{}}
+\subtitle{\vsubtitle{}}
+\author{\vauthor{}}
+\date{\today}
+
+\maketitle
+
+\addtocontents{toc}{~\hfill\textbf{Seite}\par}
+
+\tableofcontents
+
+\input{chapters/00_introduction}
+\input{chapters/01_project}
+\input{chapters/02_task_determination}
+\input{chapters/03_technical_implementation}
+\input{chapters/04_discussion}
+\input{chapters/05_result}
+\input{chapters/06_summary}
+
+% BIBLIOGRAPHY LINEBREAKS
+\setcounter{biburlnumpenalty}{8000}
+
+\printbibliography{}
+
+\listoffigures{}
+
+\end{document}

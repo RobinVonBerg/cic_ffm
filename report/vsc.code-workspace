@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+  ],
+"settings": {
+    "editor.wordWrap": "wordWrapColumn",
+    "cSpell.language": "en,de",
+    "cSpell.minWordLength": 3,
+    "cSpell.showAutocompleteSuggestions": true,
+    "latex-workshop.latex.magic.args": [
+        "-synctex=1",
+        "-interaction=nonstopmode",
+        "-file-line-error",
+        "-shell-escape",
+        "%DOC%"
+    ]
+}
+}
