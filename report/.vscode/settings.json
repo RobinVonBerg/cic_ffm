@@ -1,5 +1,16 @@
 {
     "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 80,
+    "cSpell.language": "en,de",
+    "cSpell.minWordLength": 3,
+    "cSpell.showAutocompleteSuggestions": true,
+    "latex-workshop.latex.magic.args": [
+        "-synctex=1",
+        "-interaction=nonstopmode",
+        "-file-line-error",
+        "-shell-escape",
+        "%DOC%"
+    ],
     "latex-workshop.latex.tools": [ 
         {
             "name": "latexmk",
