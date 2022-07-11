@@ -1,8 +1,19 @@
 #define /bin/python
 
+"""
+Description: Script to create animations in a format that represents
+             RGB values in a 32 bit unsigned integer.
+
+Author:      Robin von Berg (inf104426)
+"""
+
 import sys
 
-gamma_data = [
+FRAME_AMOUNT = 38
+VALUES_PER_FRAME = 19
+
+# Used to correct linear color transitions to look linear/smooth.
+GAMMA = [
     0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
     0,   0,   0,   0,   0,   0,   0,   0,   0,   1,   1,   1,   1,   1,   1,
     1,   1,   1,   1,   1,   1,   2,   2,   2,   2,   2,   2,   2,   2,   3,
@@ -22,18 +33,20 @@ gamma_data = [
     218, 220, 223, 225, 227, 230, 232, 235, 237, 240, 242, 245, 247, 250, 252,
     255]
 
-vals_per_frame = 19
 
-frames_in_ds = 38
+def gamma_correction(c):
+    return (GAMMA[c[0]], GAMMA[c[1]], GAMMA[c[2]])
 
-def gamma(c):
-    return (gamma_data[c[0]], gamma_data[c[1]], gamma_data[c[2]])
-
-def to32(c):
+# Concatenate 8bit RGB values.
+def to_single_val(c):
     return c[0] << 16 | c[1] << 8 | c[2]
 
+def print_color(c):
+    sys.stdout.write(str(to_single_val(gamma_correction(c))))
+    sys.stdout.write(", ")
+
+
 def line_up(base_color):
-    
     color8th = (int(base_color[0] / 8), int(base_color[1] / 8), int(base_color[2] / 8))
     color6th = (int(base_color[0] / 6), int(base_color[1] / 6), int(base_color[2] / 6))
     color5th = (int(base_color[0] / 5), int(base_color[1] / 5), int(base_color[2] / 5))
@@ -41,24 +54,21 @@ def line_up(base_color):
     color2th = (int(base_color[0] / 2), int(base_color[1] / 2), int(base_color[2] / 2))
 
 
-    for led in range(vals_per_frame):
-        sys.stdout.write(str(to32(gamma(color6th))))
-        sys.stdout.write(", ")
+    for led in range(VALUES_PER_FRAME):
+        print_color(color6th)
     sys.stdout.write("\n")
 
-    for led in range(vals_per_frame):
-        sys.stdout.write(str(to32(gamma(color6th))))
-        sys.stdout.write(", ")
+    for led in range(VALUES_PER_FRAME):
+        print_color(color5th)
     sys.stdout.write("\n")
 
-    for led in range(vals_per_frame):
-        sys.stdout.write(str(to32(gamma(color4th))))
-        sys.stdout.write(", ")
+    for led in range(VALUES_PER_FRAME):
+        print_color(color4th)
     sys.stdout.write("\n")
 
-    for frame in range(frames_in_ds):
-        for led in range(vals_per_frame):
-            led_in_focus = int(((frames_in_ds - 1) - frame) / 2)
+    for frame in range(FRAME_AMOUNT):
+        for led in range(VALUES_PER_FRAME):
+            led_in_focus = int(((FRAME_AMOUNT - 1) - frame) / 2)
             distance = abs(led - led_in_focus)
 
             if distance > 7: distance = 4
@@ -71,26 +81,21 @@ def line_up(base_color):
                 color2th[2] + color8th[2] * factor 
             )
             
-            sys.stdout.write(str(to32(gamma(color))))
-            sys.stdout.write(", ")
+            print_color(color)
         sys.stdout.write("\n")
 
-    for led in range(vals_per_frame):
-        sys.stdout.write(str(to32(gamma(color4th))))
-        sys.stdout.write(", ")
+    for led in range(VALUES_PER_FRAME):
+        print_color(color4th)
     sys.stdout.write("\n")
 
-    for led in range(vals_per_frame):
-        sys.stdout.write(str(to32(gamma(color5th))))
-        sys.stdout.write(", ")
+    for led in range(VALUES_PER_FRAME):
+        print_color(color5th)
     sys.stdout.write("\n")
 
-    for led in range(vals_per_frame):
-        sys.stdout.write(str(to32(gamma(color6th))))
-        sys.stdout.write(", ")
+    for led in range(VALUES_PER_FRAME):
+        print_color(color6th)
     sys.stdout.write("\n")
 
 if __name__ == "__main__":
-    #base_color = (200, 255, 200)
     base_color = (0, 0, 255)
     line_up(base_color)
