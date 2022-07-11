@@ -1,17 +1,134 @@
-// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
-// https://github.com/microsoft/vscode-dev-containers/tree/v0.209.6/containers/ubuntu
 {
 	"name": "Ubuntu",
 	"build": {
-		"dockerfile": "Dockerfile",
-		// Update 'VARIANT' to pick an Ubuntu version: hirsute, focal, bionic
-		// Use hirsute or bionic on local arm64/Apple Silicon.
-		"args": { "VARIANT": "focal" }
+		"dockerfile": "Dockerfile"
 	},
 
 	// Set *default* container specific settings.json values on container create.
-	"settings": {},
-
+	"settings": 
+	{
+		"editor.wordWrap": "wordWrapColumn",
+		"editor.wordWrapColumn": 80,
+		"cSpell.language": "en,de",
+		"cSpell.minWordLength": 3,
+		"cSpell.showAutocompleteSuggestions": true,
+		"latex-workshop.latex.magic.args": [
+			"-synctex=1",
+			"-interaction=nonstopmode",
+			"-file-line-error",
+			"-shell-escape",
+			"%DOC%"
+		],
+		"latex-workshop.latex.tools": [ 
+			{
+				"name": "latexmk",
+				"command": "latexmk",
+				"args": [
+					"-shell-escape",
+					"-synctex=1",
+					"-interaction=nonstopmode",
+					"-file-line-error",
+					"-pdf",
+					"-outdir=%OUTDIR%",
+					"%DOC%"
+				],
+				"env": {}
+			},
+			{
+				"name": "lualatexmk",
+				"command": "latexmk",
+				"args": [
+					"-shell-escape",
+					"-synctex=1",
+					"-interaction=nonstopmode",
+					"-file-line-error",
+					"-lualatex",
+					"-outdir=%OUTDIR%",
+					"%DOC%"
+				],
+				"env": {}
+			},
+			{
+				"name": "xelatexmk",
+				"command": "latexmk",
+				"args": [
+					"-shell-escape",
+					"-synctex=1",
+					"-interaction=nonstopmode",
+					"-file-line-error",
+					"-xelatex",
+					"-outdir=%OUTDIR%",
+					"%DOC%"
+				],
+				"env": {}
+			},
+			{
+				"name": "latexmk_rconly",
+				"command": "latexmk",
+				"args": [
+					"%DOC%"
+				],
+				"env": {}
+			},
+			{
+				"name": "pdflatex",
+				"command": "pdflatex",
+				"args": [
+					"-shell-escape",
+					"-synctex=1",
+					"-interaction=nonstopmode",
+					"-file-line-error",
+					"%DOC%"
+				],
+				"env": {}
+			},
+			{
+				"name": "bibtex",
+				"command": "bibtex",
+				"args": [
+					"%DOCFILE%"
+				],
+				"env": {}
+			},
+			{
+				"name": "rnw2tex",
+				"command": "Rscript",
+				"args": [
+					"-e",
+					"knitr::opts_knit$set(concordance = TRUE); knitr::knit('%DOCFILE_EXT%')"
+				],
+				"env": {}
+			},
+			{
+				"name": "jnw2tex",
+				"command": "julia",
+				"args": [
+					"-e",
+					"using Weave; weave(\"%DOC_EXT%\", doctype=\"tex\")"
+				],
+				"env": {}
+			},
+			{
+				"name": "jnw2texmintex",
+				"command": "julia",
+				"args": [
+					"-e",
+					"using Weave; weave(\"%DOC_EXT%\", doctype=\"texminted\")"
+				],
+				"env": {}
+			},
+			{
+				"name": "tectonic",
+				"command": "tectonic",
+				"args": [
+					"--synctex",
+					"--keep-logs",
+					"%DOC%.tex"
+				],
+				"env": {}
+			}
+		]
+	},
 
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
@@ -19,12 +136,6 @@
 		"streetsidesoftware.code-spell-checker",
 		"streetsidesoftware.code-spell-checker-german"
 	],
-
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
-
-	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "uname -a",
 
 	// Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
 	"remoteUser": "vscode"
