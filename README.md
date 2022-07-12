@@ -15,6 +15,3 @@ Das Journal von Robin wurde in Notion gepflegt und als HTML exportiert.
 
 ## Autoren
 Sven Hülsen `inf104302` & Robin von Berg `inf104426`  
-<br>
-Mit Unterstützung im Projektbericht vom weiteren Team:  
-Celina Krug, Florian Bucher, Moritz Hillen, Maybritt Braun, Lucas Below und Annika Fröhlich.  
