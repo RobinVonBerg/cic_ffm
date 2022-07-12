@@ -1,4 +1,4 @@
-\documentclass[11pt,oneside,headsepline,a4paper]{scrreprt}
+\documentclass[11pt,oneside,headsepline,a4paper,ngerman]{scrreprt}
 
 % PACKAGES
 \usepackage{graphicx}              % images
@@ -13,6 +13,8 @@
 \usepackage[T1]{fontenc}           % font encoding
 \usepackage[hidelinks]{hyperref}   % external links
 \usepackage[hypcap=false]{caption} % captions
+\usepackage{isodate}               % dates
+\usepackage[splitrule]{footmisc}
 \usepackage[
     backend=biber,
     style=numeric
@@ -56,6 +58,9 @@
     breaklines
 }
 
+
+\setlength{\parindent}{0pt}
+
 % BIB FILE
 \addbibresource{sources.bib}
 
@@ -79,7 +84,7 @@
 
 \titlehead{\vcontext{}\\\vprof{}}
 \subject{\vsubject{}}
-\title{\vtitle{}}
+\title{\includegraphics[width=8cm]{sketches/render_bin.jpg}\\\vtitle{}}
 \subtitle{\vsubtitle{}}
 \author{\vauthor{}}
 \date{\today}
