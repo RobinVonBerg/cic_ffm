@@ -1,6 +1,8 @@
 arduino/.pio
 arduino/.vscode
 
+*.code-workspace
+
 *.aux
 *.lof
 *.log
