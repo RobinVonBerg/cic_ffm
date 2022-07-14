@@ -1,5 +1,6 @@
 arduino/.pio
 arduino/.vscode
+arduino/.gitignore
 
 *.code-workspace
 
