@@ -26,6 +26,7 @@
         \item Sensorik zur Detektion von Flaschen im Flaschenring
         \item Detektion von Gegenständen die in den Behälter geworfen werden
         \item Messung des Füllstandes
+        \item Verkablung der Sensorik und der LEDs.
         \item Austausch von Informationen zwischen mehreren Endgeräten
         \item Verarbeitung der Sensordaten und Ansteuerung der Beleuchtung
     \end{itemize}
@@ -258,7 +259,37 @@ void TMF8821::start(void)
 \addtocontents{toc}{\protect\setcounter{tocdepth}{2}}
 
 \section{Stückliste}
-    siehe Technische Daten.
+    \begin{table}[H]
+        \centering
+        \begin{tabularx}{\textwidth}{ | l | X | }\hline
+            \textbf{Anzahl} & \textbf{Bezeichnung} \\\hline
+            4               & Arduino Nano 33 BLE \\\hline
+            1               & Sparkfun Qwiic dToF Imager - TMF8821 \\\hline
+            3               & Pololu 5cm Digital Distance Sensor \\\hline
+            1               & Sharp GP2Y0A60SZLF Analog Distance Sensor 10-150cm \\\hline
+            30              & Adafruit Neopixel RGBW 0.2W \\\hline            1               & Adafruit NeoPixel RGB LED Strip 30 LEDs/m 5m \\\hline
+            2               & Level Shifter, Joy-IT TXB0104 \\\hline
+            1               & Netzteil POS-50-5-C 5V 10A \\\hline
+        \end{tabularx}
+    \end{table}
 
 \section{Zusammenführung von Modell und Technik}
-    Der ganze technische Krams und ein bisschen Modellbau
+
+    \subsubsection{Der Maschinenraum}
+        
+        Für die zwei Arduinos, das Netzteil und die Breadboards für die Steckverbindungen unserer Sensoren und LEDs brauchen wir im Mülleimer einen geschützten Ort. Wir haben uns dafür entschieden, diesen \enquote{Maschinenraum} im Boden der Tonne zu platzieren, und einen um 10 Zentimeter erhöhten Doppelte-Boden einzubauen, auf dem dann die innere Mülltonne steht.
+        So kann man die innere und danach die äußere Tonne nach oben rausheben, da beide Böden nicht fest mit der Tonne veranker sind.
+        Damit kommen wir immer an unsere Technik.
+        Dann habe wir am unteren Rand der Tonne noch ein Loch für unsere Stromverkabelung geschnitten, sodass das das einzige Kabel ist, was von außen sieht.
+
+    \subsubsection{Verkabelung}
+
+        Die restlichen Kabel sind an der Innenwand der äußeren Tonne nach oben gezogen und dann dort durch kleine Löcher nach Bedarf nach außen geführt.
+
+
+    \subsubsection{Technik im Flaschenring}
+
+        Die LEDs der Fächer im Flaschenring haben wir von unten außen an die Konstruktion geklebt und vorher passende Löcher in die Fächer geschnitten. Analog dazu sind wir bei den 5cm Lidar Sensoren an der Rückseite der Fächer vorgegangen. (Zwischen Tonnenwand und Flaschenring.)
+
+    \subsubsection{LED-Stripes}
+
