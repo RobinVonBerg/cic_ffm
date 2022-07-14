@@ -125,7 +125,7 @@
 
         Die Implementation der abstrahierten Interaktion mit dem Sensor ist in der Datei tmf8821.cpp realisiert, die entsprechende Schnittstelle dazu durch die Header Datei tmf8821.hpp gegeben. Durch die dort definierte Methode init wird der Sensor konfiguriert. Das bedeutet, die SPAD Map wird auf die vordefinierte SPAD Map mit der ID 6 festgelegt und der zeitliche Abstand zwischen zwei Messungen wird auf 50\,ms gesetzt. Dieser Wert hat sich aus Testläufen mit unterschiedlichen Werten ergeben. Das Ziel ist diesen Wert so gering zu halten wie möglich, damit ein eingeworfener Gegenstand auf jeden Fall detektiert wird und nicht genau zwischen zwei Messungen eingeworfen werden kann. Die durchgeführten Tests haben ergeben, dass Messungen mit einem zeitlichen Abstand von unter 50\,ms jedoch ungenauere Messwerte hervorbrachten. Die init Methode sollte typischerweise in der Setup Methode der main Klasse aufgerufen werden.\\
 
-        Die Methode start lässt den Sensor eine einzelne Messung durchführen und interpretiert zugleich das Ergebnis. Dazu werden die vom Sensor zurückgelieferten Messwert zu einem Status ausgewertet, welcher in der aktuellen Instanz des Sensorobjekts gespeichert wird. Dabei kann das Messergebnis einem von drei möglichen Status zugeordnet werden. Die Status und ihre Bedeutungen werden in folgender Tabelle erläutert.
+        Die Methode start lässt den Sensor eine einzelne Messung durchführen und interpretiert zugleich das Ergebnis. Dazu werden die vom Sensor zurückgelieferten Messwert zu einem Status ausgewertet, welcher in der aktuellen Instanz des Sensorobjekts gespeichert wird. Dabei kann das Messergebnis einem von drei möglichen Status zugeordnet werden. Die Status und ihre Bedeutungen werden in folgender Tabelle erläutert.\\
 
         \begin{table}[H]
             \centering
@@ -253,6 +253,10 @@ void TMF8821::start(void)
             \caption{Von Microsoft Excel generierter Graph auf Basis der Messdaten}
             \label{fig:calibration}
         \end{figure}
+
+        Es zeigt sich, dass die Trendlinie, insbesondere bei den kurzen Distanzen, den Messpunkten sehr gut folgt. Bei den mittleren Distanzen gibt es leichte Abweichungen, da dort auch die Messpunkte keinem klar erkennbaren Muster folgen. Das führt dazu, dass die Messungen, insbesondere in diesem Bereich, kein sehr genaues Ergebnis liefern werden. Jedoch werden die Abweichungen vom Ist-Zustand auch nicht so groß sein, dass die Messwerte für eine Auswertung, durch beispielsweise die FES, unbrauchbar sind. Der größte Nutzen der Füllstandsmessung, das Detektieren einer vollen Tonne, ist einwandfrei gegeben, durch die Genauigkeit der Trendlinie bei kurzen Distanzen.\\
+
+        Die für den Füllstandssensor implementierte Methode getFillLevel ruft die bereits angesprochene Methode liest den Messwert des Sensors aus und lässt anhand der bereits angesprochenen Methode calculateDistance die gemessene Distanz berechnen. Aus der gemessenen Distanz, der Distanz für den vollen Zustand und der Distanz für den leeren Zustand wird dann der Füllgrad berechnet und als abgerundeter, ganzzahliger Teil von 100 zurückgegeben.
 
     \section{Aufgabenbereiche}
 
