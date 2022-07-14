@@ -183,10 +183,20 @@ void TMF8821::start(void)
 
         Die Auswertung der Messwerte zum neuen Status kann jedoch auch mit einer einzelnen Iteration über die Messdaten realisiert werden, indem die Methoden checkMiddleRow und checkBottomRow zu einer Methode zusammengefasst werden, die einmal durch die Messwerte iteriert und dabei zurückgibt in welchen Messebenen etwas detektiert oder eben nichts detektiert wurde. Diese Verbesserung bietet somit eine Reduktion der Laufzeit, welche möglicherweise ausreichend ist, um die Einwurfdetektion in ihrem geplanten Zustand funktionsfähig zu implementieren.
         
-\section{Flaschenerkennung (Working Title)}
+\section{Detektion von Flaschen im Flaschenring}
     \subsection{Diskussion}
+        Bei der Detektion von Flaschen im Flaschenring ist zu beachten, dass hierfür ein Sensor verwendet werden muss, der Glas in verschiedenen Farben einwandfrei detektiert. Es zeigt sich, dass sowohl die meisten optischen Sensoren, als auch Ultraschallsensoren dazu in der Lage sind. Bei optischen Sensoren ist jedoch zu bedenken, dass die maximale Detektionsreichweite bei der Detektion von Glas kleiner sein kann, als vom Hersteller angegeben, da die Reflektivität von Glas, je nach dessen Einfärbung, nicht sehr hoch ist. Somit ist ein Ultraschallsensor für die Detektion von Flaschen die zuverlässigere Wahl.\\
+
+        Ein weiteres Kriterium, welches vom Sensor erfüllt werden sollte, ist eine geringe Komponentengröße, da er sonst nicht ohne großen Aufwand zwischen Flaschenring und Tonnenkörper montiert werden kann. Das Sensormaß entlang seiner Messachse ist hierbei besonders ausschlaggebend.\\
+
+        Die kleinsten Ultraschallsensoren die während der Komponentenrecherche ermittelt wurden besitzen Bauhöhen von einem bis zu zwei Zentimetern, während der flachste Lidarsensor der ermittelt wurde ein Bauhöhe von 3\,mm besitzt. Dabei handelt es sich um Digital Distance Sensor von Pololu. Welcher, aufgrund ebendieser geringen Bauhöhe und trotz der Einschränkung, dass die Reichweite eventuell geringer ausfällt, als vom Hersteller angegeben, für dieses Projekt ausgewählt wurde. Dieser Sensor wird in verschiedenen Ausführungen angeboten, wobei diese sich in ihrer maximalen und minimalen Messdistanz unterscheiden. Da es sich um einen Sensor mit digitalem Ausgangssignal handelt und somit nur detektiert wird, ob ein Objekt vorhanden ist und nicht wie weit es entfernt ist, muss sichergestellt sein, dass die Reichweite gering genug ist um nicht die, dem Sensor gegenüberliegende, Wandung des Flaschenfachs zu detektieren, da der Sensor seitlich am Flaschenfach angebracht wird. Da die Flaschenfächer zum Zeitpunkt der Materialauswahl nicht vollständig konzipiert waren, wurde die Sensorvariante ,mit einer Reichweite zwischen 0,5\,cm und 5\,cm ausgewählt und damit der Durchmesser der Flaschenfächer auf mindestens 5\,cm festgelegt. Die Polou Teilenummer dieser Sensorvariante ist 4050.\\
+        
+        Wie bereits erwähnt, wird der Sensor seitlich an den Fächern des Flaschenrings montiert. Eine Montage an der Unterseite des Fachs wurde ausgeschlossen, da dies sehr fehleranfällig ist. Beispielsweise könnte sich Dreck am Boden des Fachs sammeln und den Sensor somit blockieren. Da der Sensor zwischen Flaschenring und Tonnenkörper montiert wird und der Flaschenring eine leichte Neigung nach außen aufweist, ist der Sensor von der Horizontalen Ebene nach unten abweichend ausgerichtet und somit gegen grobe Verschmutzungen, die von oben in das Fach gelangen geschützt.\\
 
     \subsection{Implementation}
+        Die Datei pololu\_digi5.cpp implementiert die Headerdatei pololu\_digi5.hpp und ermöglicht die Abstratktion der Sensorfunktion in der Software. Eine Instanz dieses Sensors wird duch den Konstruktor initialisiert, welchem der entsprechende Arduino Anschlusspin übergeben wird. Da der Sensor ein hohes Potential an seinen Ausgangspin anlegt, solange nichts detektiert wird, wird der pinmode INPUT_PULLUP verwendet, sodass das Signal am Eingangspin des Arduino ebenfalls hohes Potential besitzt, solange die angeschlossene Leitung das Signal nicht aktiv auf das niedrige Potenzial bringt.\\
+
+        Die Methode read liest das Signal am entsprechenden Pin aus, negiert dieses und gibt das Ergebnis der Negation als bool Wert zurück. Die Negation wird durchgeführt, sodass ein Rückgabewert von true einer Detektion entspricht und ein Rückgabewert von false bedeutet, dass sich kein Objekt im Messbereich des Sensors befindet.
 
 \section{Kommunikation zwischen Endgeräten}
     \subsection{Diskussion}
@@ -257,8 +267,6 @@ void TMF8821::start(void)
         Es zeigt sich, dass die Trendlinie, insbesondere bei den kurzen Distanzen, den Messpunkten sehr gut folgt. Bei den mittleren Distanzen gibt es leichte Abweichungen, da dort auch die Messpunkte keinem klar erkennbaren Muster folgen. Das führt dazu, dass die Messungen, insbesondere in diesem Bereich, kein sehr genaues Ergebnis liefern werden. Jedoch werden die Abweichungen vom Ist-Zustand auch nicht so groß sein, dass die Messwerte für eine Auswertung, durch beispielsweise die FES, unbrauchbar sind. Der größte Nutzen der Füllstandsmessung, das Detektieren einer vollen Tonne, ist einwandfrei gegeben, durch die Genauigkeit der Trendlinie bei kurzen Distanzen.\\
 
         Die für den Füllstandssensor implementierte Methode getFillLevel ruft die bereits angesprochene Methode liest den Messwert des Sensors aus und lässt anhand der bereits angesprochenen Methode calculateDistance die gemessene Distanz berechnen. Aus der gemessenen Distanz, der Distanz für den vollen Zustand und der Distanz für den leeren Zustand wird dann der Füllgrad berechnet und als abgerundeter, ganzzahliger Teil von 100 zurückgegeben.
-
-    \section{Aufgabenbereiche}
 
 \addtocontents{toc}{\protect\setcounter{tocdepth}{2}}
 
