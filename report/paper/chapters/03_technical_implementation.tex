@@ -34,7 +34,7 @@
     In den nachfolgenden Kapiteln werden die zur Realisierung der verschiedenen Teilaspekte genutzten Komponenten beschrieben und diskutiert.
 
 
-    \begin{figure}[h]
+    \begin{figure}[H]
         \begin{center}
             \includegraphics[width=9cm]{media/03_technical_implementation/header_1.png}
         \end{center}
@@ -42,7 +42,7 @@
         \label{fig:header_1}
     \end{figure}
 
-    \begin{figure}[h]
+    \begin{figure}[H]
         \begin{center}
             \includegraphics[width=9cm]{media/03_technical_implementation/header_2.png}
         \end{center}
@@ -56,7 +56,32 @@
 
 \section{Mikrocontroller}
     \subsection{Diskussion}
-        Warum Arduino
+        Als zentrale Steuerungskomponente ist die Wahl des Mikrocontrollers von zentraler Bedeutung für die technische Realisierung des Projekts. Die wichtigste Eigenschaft des Mikrocontrollers war in diesem Projekt die generelle Verbreitung des Mikrocontrollers, da die Einarbeitungszeit sehr kurz ist und somit eine große Auswahl von Informationsquellen entscheidende Vorteile bringt. Dadurch stechen zwei Hersteller besonders heraus. Zum einen Arduino, die eine große Auswahl unterschiedlichster Mikrocontroller mit verschiedenstem Funktionsumfang anbieten und zum anderen Espressif, deren ESP32 Mikrocontroller eher als "Alleskönner" bezeichnet werden kann, da er im Vergleich zu den meisten Arduino Modellen wesentlich mehr und bessere Hardware bietet.
+        Eine weitere Möglichkeit bietet die Nutzung des Einplatinencomputers Raspberry Pi, der einen weitaus größeren Funktionsumfang und wesentlich mehr Rechenleistung besitzt als ein Mikrocontroller. Die Nachteile des Raspberry Pi liegen in den hohen Anschaffungskosten und dem ebenfalls hohen Stromverbrauch. Im allgemeinen ist ein Raspberry Pi für dieses Projekt überdimensioniert, da ein Großteil des Mehrwertes den dieser gegenüber einem Mikrocontroller bietet in diesem Projekt keine Verwendung fände.//
+        
+        Da eine kabellose Kommunikation der Mikrocontroller untereinander realisiert werden soll, ist es essenziell, dass der Mikrocontroller mit einem WiFi oder Bluetooth Modul ausgestattet ist. Der ESP32 bringt beides mit. Arduino bietet ebenfalls einige Modelle an, die mit mindestens einem der Module ausgestattet sind. Insbesondere die Nano 33 Reihe von Arduino bietet Geräte, die für die Verwendung in diesem Projekt die notwendigen Kriterien erfüllen. Hier sind speziell die Modelle Nano 33 BLE und Nano 33 IoT hervoruzuheben. Das Modell Nano 33 IoT ist dabei speziell für die Verwendung in Internet of Things Geräten designed und bietet sowohl ein WiFi als auch ein Bluetooth Modul. Das Modell Nano 33 BLE besitzt lediglich ein Bluetooth Modul, dieses ist jedoch mit Blutooth 5 etwas moderner als die Bluetooth 4.2 Variante, die im Nano 33 IoT Modell verbaut ist. Zudem besitzt das BLE Modell einen leistungsstärkeren Prozesser, der jedoch durch integrierte Energiesparfunktionen mindestens genauso energiesparend ist. Der Enrgieverbrauch stellt sich für dieses Projekt ebenfalls als wichtiger Faktor heraus, da für eine mögliche Weiterführung des Projekts eine Stromversorgung der Geräte über Solarzellen und Akkus implementierbar sein soll. Die hier diskutierten Vor- und Nachteile der 3 zur Verfügung stehenden Mikrocontrollern wird in Tabelle \ref{tab:compare_mics} nochmals in kürze zusammengefasst.
+
+        \begin{table}[H]
+            \caption{Vergleich der Mikrocontroller ESP32, Nano 33 IoT und Nano 33 BLE}
+            \centering
+            \begin{tabularx}{\textwidth}{  X | X | X  }
+                \textbf{Espressif ESP32} & \textbf{Arduino Nano 33 IoT} & \textbf{Arduino Nano 33 BLE}\\ [0.5ex] \hline\hline
+                Leistungsstärkster Mikrocontroller &
+                Am wenigsten Leistung im Vergleich &
+                Leistungsstarker Prozessor\\
+                &&\\
+                Bluetooth \& WiFi &
+                Bluetooth \& WiFi &
+                Nur Bluetooth, dafür Bluetooth 5 \\
+                &&\\
+                Vergleichsweise hoher Stromverbrauch &
+                Geringer Stromverbrauch &
+                Geringer Stromverbrauch \\
+            \end{tabularx}
+            \label{tab:compare_mics}
+        \end{table}
+
+        Im Kapitel \ref{communications} wird erläutert, dass die Kommunikation über den Bluetooth beziehungsweise Blutooth Low Energy Standard erfolgen soll. Somit bieten die Wifi Module, die der ESP32 und der Nano 33 IoT Mikrocontroller mitbringen keine weiteren Vorteile gegenüber dem Nano 33 BLE Mikrocontroller. Da dieser außerdem einen sehr geringen Stromverbrauch im Verhältnis zu seiner Leistungsfähigkeit aufweist, wurde dieser für die Verwendung in diesem Projekt ausgewählt.
 
     \subsection{}
         C++ \& PlatformIO
@@ -194,11 +219,11 @@ void TMF8821::start(void)
         Wie bereits erwähnt, wird der Sensor seitlich an den Fächern des Flaschenrings montiert. Eine Montage an der Unterseite des Fachs wurde ausgeschlossen, da dies sehr fehleranfällig ist. Beispielsweise könnte sich Dreck am Boden des Fachs sammeln und den Sensor somit blockieren. Da der Sensor zwischen Flaschenring und Tonnenkörper montiert wird und der Flaschenring eine leichte Neigung nach außen aufweist, ist der Sensor von der Horizontalen Ebene nach unten abweichend ausgerichtet und somit gegen grobe Verschmutzungen, die von oben in das Fach gelangen geschützt.\\
 
     \subsection{Implementation}
-        Die Datei pololu\_digi5.cpp implementiert die Headerdatei pololu\_digi5.hpp und ermöglicht die Abstratktion der Sensorfunktion in der Software. Eine Instanz dieses Sensors wird duch den Konstruktor initialisiert, welchem der entsprechende Arduino Anschlusspin übergeben wird. Da der Sensor ein hohes Potential an seinen Ausgangspin anlegt, solange nichts detektiert wird, wird der pinmode INPUT_PULLUP verwendet, sodass das Signal am Eingangspin des Arduino ebenfalls hohes Potential besitzt, solange die angeschlossene Leitung das Signal nicht aktiv auf das niedrige Potenzial bringt.\\
+        Die Datei pololu\_digi5.cpp implementiert die Headerdatei pololu\_digi5.hpp und ermöglicht die Abstratktion der Sensorfunktion in der Software. Eine Instanz dieses Sensors wird duch den Konstruktor initialisiert, welchem der entsprechende Arduino Anschlusspin übergeben wird. Da der Sensor ein hohes Potential an seinen Ausgangspin anlegt, solange nichts detektiert wird, wird der pinmode INPUT\_PULLUP verwendet, sodass das Signal am Eingangspin des Arduino ebenfalls hohes Potential besitzt, solange die angeschlossene Leitung das Signal nicht aktiv auf das niedrige Potenzial bringt.\\
 
         Die Methode read liest das Signal am entsprechenden Pin aus, negiert dieses und gibt das Ergebnis der Negation als bool Wert zurück. Die Negation wird durchgeführt, sodass ein Rückgabewert von true einer Detektion entspricht und ein Rückgabewert von false bedeutet, dass sich kein Objekt im Messbereich des Sensors befindet.
 
-\section{Kommunikation zwischen Endgeräten}
+\section{Kommunikation zwischen Endgeräten} \label{communications}
     \subsection{Diskussion}
 
     \subsection{Implementation}
