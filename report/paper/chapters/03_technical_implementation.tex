@@ -33,25 +33,6 @@
 
     In den nachfolgenden Kapiteln werden die zur Realisierung der verschiedenen Teilaspekte genutzten Komponenten beschrieben und diskutiert.
 
-
-    \begin{figure}[H]
-        \begin{center}
-            \includegraphics[width=9cm]{media/03_technical_implementation/header_1.png}
-        \end{center}
-        \caption{Caption}
-        \label{fig:header_1}
-    \end{figure}
-
-    \begin{figure}[H]
-        \begin{center}
-            \includegraphics[width=9cm]{media/03_technical_implementation/header_2.png}
-        \end{center}
-        \caption{Caption}
-        \label{fig:header_2}
-    \end{figure}
-
-
-
 \addtocontents{toc}{\protect\setcounter{tocdepth}{1}}
 
 \section{Mikrocontroller}
@@ -89,16 +70,51 @@
 \section{Beleuchtung}
     \subsection{Diskussion}
 
+        Um die Flaschen des Flaschenrings und die Rauten zu beleuchten benötigen wir LEDs. Es eröffnet sich herbei ein großer Raum von Optionen. LEDs sind zu unterscheiden in Größe und Form, in Helligkeit und der Art der Ansteuerung und zwischen RGB- und RGBW-LEDS.
+        Eine der Kategorien konnten wir mit dem Rat von Prof. Hoffmann und Simon zu Beginn klären. Um die Menge der benötigten LEDs individuell über ein Arduino ansteuern zu können, benötigen wir LEDs mit einem integriertem Driver-Chip. NeoPixel von Adafruit, oder die vielen äquivalente Optionen auf dem Markt ermöglichen diese Funktionalität in dem sie als 24 oder 32 Bit Shift-Register agieren. Dabei wird die Farbintensität jeder der drei oder vier Farben (RGB oder RGBW) als ein 8-Bit Wert angegeben und von LED zu LED weitergeleitet.
+        Wird ein RESET-Signal gesendet, wird der zuletzt gespeicherte Wert angezeigt.
+
+        Weitere Überlegungen mussten wir uns besonders hinsichtlich der Größe und Form machen. Für die Animationen der Tonne wollten wir jede Raute an den oberen Kanten, dessen Längen jeweils ca. 10cm betragen, mit LEDs bestücken. Hierfür haben sich LED-Strips angeboten, wobei wir möglichst schmale benötigen, damit sie, wenn eine Person den Mülleimer von oben anguckt, in der Rautenstruktur verschwinden. Als alternativen Ansatz hatten wir vorher überlegt die Rauten mit einzelnen LEDs zu beleuchten, doch durch den enormen Aufwand der 
+
+
+
     \subsection{Implementation}
 
+        \subsubsection{Hardware}
+
+            Wir haben uns bei der Rautenbeleuchtung für 7 Meter Adafruit Mini Skinny NeoPixel Strips entschieden die mit 30 RGB LEDs pro Meter bestückt sind. So konnten wir den Strip in jeweils 20cm Segmenten unterteilen und jede Raute mit insgesamt 6 LEDs beleuchten.
+            Der Strip ist mit 1 Ampere Verbrauch pro Meter angegeben, was die Wahl des 10 Ampere Netzteils begründet.
+            Die Strip-Segmenten haben wir dann wieder verbunden, in dem wir die drei Kontakte per Kabel an das nächste Segmenten weitergeleitet haben. Die Abstände zwischen den Strips und damit die Kabellängen sind abhängig von der Position am Modell.
+            Diese Aufteilung wird in Abbildung\,\ref{fig:leds_3} skizziert.
+            Dort zu erkennen ist, dass wir nur ein Teil der Rauten beleuchtet haben, da es uns an LED-Strips fehlte. Eine aus Rauten bestehende große Raute, die wir aus drei Kabel-Strip-Strängen zusammensetzen.
+            So laufen am Ende drei Stecker zum Arduino.\\
+            
+            Für die 
+            
+
+        \subsubsection{Software}
+
+            Softwareseitig bieten die Neopixel eine sehr gute Integration im Arduino Universum mit der Bibliothek \href{https://github.com/adafruit/Adafruit_NeoPixel}{\enquote{Adafruit\_NeoPixel}}.
+
+
+            
+
+
+
+   
         \begin{figure}[H]
-            \begin{center}
-                \includegraphics[width=7cm]{media/03_technical_implementation/leds_2.png}
-            \end{center}
-            \caption{Zeichnung Pin Belegung der NeoPixel SK6812RGBW}
-            \label{fig:leds_2}
+            \begin{subfigure}[b]{0.5\textwidth}
+                \centering\includegraphics[width=\textwidth]{media/03_technical_implementation/leds_2.png}
+                \caption{Pin-Belegung auf den verwendeten 6-Pin BreakOut-Boards für unsere NeoPixel SK6812RGBW. Gezogene Lötbrücken sind in grau eingezeichnet.}
+                \label{fig:pins_neopixel}
+              \end{subfigure}\quad
+              \begin{subfigure}[b]{0.5\textwidth}
+                \centering\includegraphics[width=0.7\textwidth]{media/03_technical_implementation/picture_neopixel.jpg}
+                \caption{NeoPixel RGBW LED SK6812RGBW}
+                \label{fig:picture_neopixel}
+              \end{subfigure}
         \end{figure}
-    
+
         \begin{figure}[H]
             \begin{center}
                 \includegraphics[width=7cm]{media/03_technical_implementation/leds_1.png}
@@ -109,14 +125,12 @@
 
         \begin{figure}[H]
             \begin{center}
-                \includegraphics[width=12cm]{media/03_technical_implementation/leds_3.png}
+                \includegraphics[width=10cm]{media/03_technical_implementation/leds_3.png}
             \end{center}
-            \caption{Caption}
+            \caption{Anordnung der LED-Strips in der Raute am Modell}
             \label{fig:leds_3}
         \end{figure}
-
-
-
+    
 
 \section{Animation}
     \subsection{Diskussion}
@@ -299,16 +313,41 @@ void TMF8821::start(void)
     \begin{table}[H]
         \centering
         \begin{tabularx}{\textwidth}{ | l | X | }\hline
-            \textbf{Anzahl} & \textbf{Bezeichnung} \\\hline
-            4               & Arduino Nano 33 BLE \\\hline
-            1               & Sparkfun Qwiic dToF Imager - TMF8821 \\\hline
-            3               & Pololu 5cm Digital Distance Sensor \\\hline
-            1               & Sharp GP2Y0A60SZLF Analog Distance Sensor 10-150cm \\\hline
-            30              & Adafruit Neopixel RGBW 0.2W \\\hline            1               & Adafruit NeoPixel RGB LED Strip 30 LEDs/m 5m \\\hline
-            2               & Level Shifter, Joy-IT TXB0104 \\\hline
-            1               & Netzteil POS-50-5-C 5V 10A \\\hline
+            \textbf{Menge} & \textbf{Bezeichnung} \\\hline
+            4              & Arduino Nano 33 BLE \\\hline
+            1              & Sparkfun Qwiic dToF Imager - TMF8821 \\\hline
+            3              & Pololu 5cm Digital Distance Sensor \\\hline
+            1              & Sharp GP2Y0A60SZLF Analog Distance Sensor 10-150cm \\\hline
+            30             & Adafruit Neopixel RGBW 0.2W \\\hline            1              & Adafruit NeoPixel RGB LED Strip 30 LEDs/m 5m \\\hline
+            2              & Level Shifter, Joy-IT TXB0104 \\\hline
+            1              & Netzteil POS-50-5-C 5V 10A \\\hline
+            5              & Solderable Breadboards \\\hline
+            40 Meter       & 0.75mm\textsuperscript{2} Kupferkabel - verschiedene Farben \\\hline
+            1 Meter        & 1.5mm\textsuperscript{2} Kupferkabel - verschiedene Farben \\\hline
+            ca. 170        & Crimps \\\hline
+            ca. 50         & Stecker \\\hline
         \end{tabularx}
     \end{table}
+
+\section{Schaltpläne}
+
+    \begin{figure}[H]
+        \begin{center}
+            \includegraphics[width=\textwidth]{media/03_technical_implementation/circuit_diagram_transmitter.png}
+        \end{center}
+        \caption{Schaltplan des Hauptmodells}
+        \label{fig:circuit_diagram_ransmitter}
+    \end{figure}
+
+    \begin{figure}[H]
+        \begin{center}
+            \includegraphics[width=6.8cm]{media/03_technical_implementation/circuit_diagram_receiver.png}
+        \end{center}
+        \caption{Schaltplan der zwei Rauten Modelle}
+        \label{fig:circuit_diagram_receiver}
+    \end{figure}
+
+
 
 \section{Zusammenführung von Modell und Technik}
 
@@ -328,5 +367,11 @@ void TMF8821::start(void)
 
         Die LEDs der Fächer im Flaschenring haben wir von unten außen an die Konstruktion geklebt und vorher passende Löcher in die Fächer geschnitten. Analog dazu sind wir bei den 5cm Lidar Sensoren an der Rückseite der Fächer vorgegangen. (Zwischen Tonnenwand und Flaschenring.)
 
-    \subsubsection{LED-Stripes}
+    \subsubsection{LED-Strips}
+
+        Da die Rauten unterschiedliche Kantenlängen zwischen 8 und 10,5cm besitzen, die LED-Strips aber parallel zum Modellbau gelötet werden mussten, brauchten wir einen Ansatz der einen gewissen Spielraum ermöglicht. Ebenfalls unbekannt war, in wiefern die Rautenstruktur aus Schaumstoff anpassbar waren, da wir zu dem Zeitpunkt darüber noch keine Informationen bekommen hatten.
+        Wir haben daher zwischen den geteilten LED-Strips längere Kabelverbindungen als nötig verwendet, denn während wir unter perfekten Umständen die Abstände der Übergange zwischen zwei Rauten hätten ausmessen können und wir die Kabel damit unter oder an den Rauten hätten verlegen können, müssen wir so die Länge der Kabel an jedem Übergang zweier Strips variieren können.
+        Umgesetzt wurde das, in dem wir an jeder dieser Übergänge ein etwa 8mm dickes Loch in die Tonne gebohrt haben, um das übrige Kabel als Schlaufe in die Tonne zu führen. Die benötigte Drehung des LED-Strips um die Lötpunkte und Kabel in die Richtung des Lochs zu drehen, haben wir vorsichtig am LED-Strip selbst gebogen.
+        Die langen Strecken, an denen das Kabel auf eine andere Höhe gebracht  werden mussten (zu sehen in Abbildung\,\ref{fig:leds_3}) hatten wir ursprünglich geplant außen an der Raute langzuführen und an beiden Enden der Kante jeweils eine Schlaufe in die Tonne führen zu lassen, sodass wir die LED-Strips einfacher hätten abmontieren können.
+        Unter der Voraussetzung, dass wir die Strips an dem Schaumstoff der Rauten festgeklebt wurde, haben wir uns aus ästhetischen Gründen dazu entschieden die Kabel an den langen Kanten in der Tonne langzuführen.
 
