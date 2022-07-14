@@ -9,6 +9,7 @@ Neben der Codebase der Arduinos unseres Projekts findet man auch unsere Projekt-
 
 ## Journals
 Das Journal von Robin wurde in Notion gepflegt und als HTML exportiert.
+Jeder Eintrag der ein Vermerk "(Notes)" beinhaltet, besitzt eine ausführlichere Beschreibung als Unterseite die verlinkt ist.
 
 ## Report
 

@@ -38,7 +38,7 @@
 \section{Mikrocontroller}
     \subsection{Diskussion}
         Als zentrale Steuerungskomponente ist die Wahl des Mikrocontrollers von zentraler Bedeutung für die technische Realisierung des Projekts. Die wichtigste Eigenschaft des Mikrocontrollers war in diesem Projekt die generelle Verbreitung des Mikrocontrollers, da die Einarbeitungszeit sehr kurz ist und somit eine große Auswahl von Informationsquellen entscheidende Vorteile bringt. Dadurch stechen zwei Hersteller besonders heraus. Zum einen Arduino, die eine große Auswahl unterschiedlichster Mikrocontroller mit verschiedenstem Funktionsumfang anbieten und zum anderen Espressif, deren ESP32 Mikrocontroller eher als "Alleskönner" bezeichnet werden kann, da er im Vergleich zu den meisten Arduino Modellen wesentlich mehr und bessere Hardware bietet.
-        Eine weitere Möglichkeit bietet die Nutzung des Einplatinencomputers Raspberry Pi, der einen weitaus größeren Funktionsumfang und wesentlich mehr Rechenleistung besitzt als ein Mikrocontroller. Die Nachteile des Raspberry Pi liegen in den hohen Anschaffungskosten und dem ebenfalls hohen Stromverbrauch. Im allgemeinen ist ein Raspberry Pi für dieses Projekt überdimensioniert, da ein Großteil des Mehrwertes den dieser gegenüber einem Mikrocontroller bietet in diesem Projekt keine Verwendung fände.//
+        Eine weitere Möglichkeit bietet die Nutzung des Einplatinencomputers Raspberry Pi, der einen weitaus größeren Funktionsumfang und wesentlich mehr Rechenleistung besitzt als ein Mikrocontroller. Die Nachteile des Raspberry Pi liegen in den hohen Anschaffungskosten und dem ebenfalls hohen Stromverbrauch. Im allgemeinen ist ein Raspberry Pi für dieses Projekt überdimensioniert, da ein Großteil des Mehrwertes den dieser gegenüber einem Mikrocontroller bietet in diesem Projekt keine Verwendung fände.\\
         
         Da eine kabellose Kommunikation der Mikrocontroller untereinander realisiert werden soll, ist es essenziell, dass der Mikrocontroller mit einem WiFi oder Bluetooth Modul ausgestattet ist. Der ESP32 bringt beides mit. Arduino bietet ebenfalls einige Modelle an, die mit mindestens einem der Module ausgestattet sind. Insbesondere die Nano 33 Reihe von Arduino bietet Geräte, die für die Verwendung in diesem Projekt die notwendigen Kriterien erfüllen. Hier sind speziell die Modelle Nano 33 BLE und Nano 33 IoT hervorzuheben. Das Modell Nano 33 IoT ist dabei speziell für die Verwendung in Internet of Things Geräten designed und bietet sowohl ein WiFi als auch ein Bluetooth Modul. Das Modell Nano 33 BLE besitzt lediglich ein Bluetooth Modul, dieses ist jedoch mit Bluetooth 5 etwas moderner als die Bluetooth 4.2 Variante, die im Nano 33 IoT Modell verbaut ist. Zudem besitzt das BLE Modell einen leistungsstärkeren Prozessor, der jedoch durch integrierte Energiesparfunktionen mindestens genauso energiesparend ist. Der Energieverbrauch stellt sich für dieses Projekt ebenfalls als wichtiger Faktor heraus, da für eine mögliche Weiterführung des Projekts eine Stromversorgung der Geräte über Solarzellen und Akkus implementierbar sein soll. Die hier diskutierten Vor- und Nachteile der 3 zur Verfügung stehenden Mikrocontrollern wird in Tabelle \ref{tab:compare_mics} nochmals in kürze zusammengefasst.
 
@@ -64,8 +64,12 @@
 
         Im Kapitel \ref{communications} wird erläutert, dass die Kommunikation über den Bluetooth beziehungsweise Bluetooth Low Energy Standard erfolgen soll. Somit bieten die WiFi Module, die der ESP32 und der Nano 33 IoT Mikrocontroller mitbringen keine weiteren Vorteile gegenüber dem Nano 33 BLE Mikrocontroller. Da dieser außerdem einen sehr geringen Stromverbrauch im Verhältnis zu seiner Leistungsfähigkeit aufweist, wurde dieser für die Verwendung in diesem Projekt ausgewählt.
 
-    \subsection{}
-        C++ \& PlatformIO
+
+    \subsection{Platform}
+
+        Wie in der Arduino Welt üblich programmieren wir in der systemnahen Sprache C++.
+        Allerdings haben wir uns
+
 
 \section{Beleuchtung}
     \subsection{Diskussion}
@@ -273,7 +277,7 @@ void TMF8821::start(void)
 \section{Kommunikation zwischen Endgeräten} \label{communications}
 
     \subsection{Diskussion}
-        Um die 
+        Um die Kommunikation unter mehreren 
 
     \subsection{Implementation}
 
