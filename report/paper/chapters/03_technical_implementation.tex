@@ -194,8 +194,64 @@ void TMF8821::start(void)
 
 \section{Füllstandsmessung}
     \subsection{Diskussion}
+        Zum Messen des Füllstandes soll ein Sensor, oder eventuell auch mehrere, an der Unterseite des Tonnendeckels befestigt werden. Bei der Füllstandsmessung ist zu beachten, dass er Füllstand an unterschiedlichen Positionen in der Tonne eine unterschiedliche Höhe aufweisen kann. Somit existiert kein einzelner korrekter Füllstandswert, wie es bei einer Flüssigkeit der Fall wäre. Daraus ergeben sich verschiedene Möglichkeiten für die Ermittlung eines Füllstandswertes. Eine dieser Möglichkeiten wäre, mehrere Messungen an unterschiedlichen Punkten durchzuführen und daraus einen Mittelwert zu bilden oder den Punkt mit dem höchsten Füllstand als aktuellen Wert anzunehmen. Eine weitere Möglichkeit besteht darin lediglich eine Messung an einer fixen Position durchzuführen. Diese Methode besitzt zwar eine gewisse Fehleranfälligkeit, da der Füllstand an einem anderen Punkt höher sein könnte, liegt der Messpunkt jedoch mittig, sollte in den meisten Fällen dort auch der aktuell höchste Füllstand ermittelt werden, da sich die Oberfläche des Mülls in der Tonne häufig zu einem sehr flachen Kegel auftürmt. Der klare Vorteil der Umsetzung mit einem Sensor liegt jedoch in der Einfachheit der Umsetzung dieser Methode, da nur ein Sensor benötigt wird und nicht mehrere Sensordaten miteinander verrechnet werden müssen.\\
+        
+        Es besteht zusätzlich die Möglichkeit auch für Füllstandsmessung den, im Abschnitt Einwurferkennung beschriebenen, Sensor TMF8821 von SparkFun zu verwenden, da dieser jedoch vergleichsweise hohe Kosten aufweist und eine Komplexität bietet, die von der Füllstandsmessung nicht zwingend gefordert wird, soll ein simplerer Sensor eingesetzt werden. Hierfür kommen sowohl optische als auch Ultraschallsensoren in Frage, die eine Reichweite von mindestens 140\,cm besitzen, da dies in etwa der Gesamthöhe des Gerippten entspricht. Die Auswahl der Sensoren bei den von uns ausgewählten Zulieferern war im unteren Preissegment nicht besonders groß, weshalb wir uns für den Sharp GP2Y0A60SZLF Analog Distance Sensor auf einem Pololu Carrier entschieden. Dabei handelt es sich um einen optischen Sensor mit einer Reichweite von 10\,cm bis 150\,cm. Das Ausgangssignal des Sensors ist analog.\\
+
+        Die Füllstandsmessung ist eine Funktion des Gerippten, die in diesem Projekt jedoch keine weitere Außenwirkung aufweisen soll, und wird lediglich implementiert um das Konzept eines smarten Mülleimers zu verdeutlichen. In einer weiteren Umsetzung können die Daten zum Füllstand dann beispielsweise an eine zentrale Steuereinheit übertragen werden. Weitere Informationen zur möglichen Weiterführung des Projekts befinden sich im Kapitel Zukünftige Entwicklungsmöglichkeiten.\\
 
     \subsection{Implementation} 
+        Die Interaktion mit dem Sensor wird im Quellcode in der Datei level\_meter.cpp implementiert. Diese implementiert wiederum die Headerdatei level\_meter.hpp. Um eine Instanz des Sensors zu initialisieren muss dem Konstruktor zum einen der Anschlusspin des Arduinos übergeben werden und weiterhin die Abstandsmaße vom Sensor bis zum leeren Füllstand, sowie bis zum vollen Füllstand. Dabei ist zu beachten, dass der Abstandswert zwischen Sensor und vollem Füllstand mindestens 10\,cm betragen sollte, da dies die minimale Messdistanz des Sensors ist.
+
+        Desweiteren existiert die Methode calculateDistance, welche den vom Sensor ausgegebenen Wert am Arduino Pin einliest und daraus die Distanz zum detektierten Objekt errechnet. Für die Implementation dieser Methode musste jedoch zuerst ermittelt werden, wie ein Signalwert in einen Distanzwert umgerechnet wird. Dazu wurde der Sensor auf einem Breadboard befestigt und mit dem Arduino verbunden. Der Sensor wurde auf einer ebenen Fläche so ausgerichtet, dass seine Messebene parallel zum Untergrund verläuft. Danach wurde vor dem Sensor eine weißer Karton im Abstand von 10\,cm platziert. Der Arduino wurde so konfiguriert, dass der Sensorwert alle 25\,ms 500 mal nacheinander ausgelesen wird. Dabei wird der Mittelwert der 500 Messungen berechnet und vom Arduino auf dem seriellen Monitor ausgegeben. Dieses Vorgehen wurde mit, in 5\,cm Schritten, steigenden Abständen zum Karton wiederholt, bis zu einem maximalen Abstand von 150\, cm. Die gemessenen Durchschnittswerte wurden im Programm Excel von Microsoft eingepflegt. Dort wurde aus den Daten ein Diagramm, inklusive Trendlinie und Trendlinienformel erstellt. Die Ergebnisse sind in Tabelle \ref{tab:calibration} und Abbildung \ref{fig:calibration} zu sehen.
+
+        \begin{table}
+            \centering
+            \caption{Ergebnisse der Abstandsmessungen}
+            \begin{tabular}{ c c } 
+                Distanz (cm) & Messwert\\ [0.5ex]
+                \hline
+                \hline
+                10 & 574\\
+                15 & 423\\
+                20 & 343\\
+                25 & 310\\
+                30 & 303\\
+                35 & 300\\
+                40 & 294\\
+                45 & 287\\
+                50 & 279\\
+                55 & 273\\
+                60 & 265\\
+                65 & 259\\
+                70 & 253\\
+                75 & 249\\
+                80 & 243\\
+                85 & 238\\
+                90 & 235\\
+                95 & 231\\
+                100 & 226\\
+                105 & 223\\
+                110 & 219\\
+                115 & 216\\
+                120 & 214\\
+                125 & 211\\
+                130 & 209\\
+                135 & 207\\
+                140 & 204\\
+                145 & 203\\
+                150 & 202\\
+            \end{tabular}            
+            \label{tab:calibration}
+        \end{table}
+
+        \begin{figure}[H]
+            \begin{center}
+                \includegraphics[width=12cm]{media/03_technical_implementation/calibration.png}                
+            \end{center}
+            \caption{Von Microsoft Excel generierter Graph auf Basis der Messdaten}
+            \label{fig:calibration}
+        \end{figure}
 
     \section{Aufgabenbereiche}
 

@@ -20,7 +20,7 @@ LevelMeter::LevelMeter(u_int16_t empty_distance, u_int16_t full_distance, pin_si
 
 u_int16_t LevelMeter::calculateDistance(u_int16_t pin_value)
 {
-    return u_int16_t (1000000000 * pow(pin_value, -3.016));
+    return u_int16_t (1000000000 * pow(pin_value, -2.983));
 }
 
 u_int8_t LevelMeter::getFillLevel()
