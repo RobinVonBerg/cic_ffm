@@ -378,26 +378,91 @@ void TMF8821::start(void)
 
     \subsection{Implementation}
 
+    \subsubsection{Sender (Peripheral)}
+
     \begin{listing}
         \begin{minted}{cpp}
 // Einschub aus neo_animation.hpp:
 BLEService service;
 BLEUnsignedCharCharacteristic characteristic;
 
-!BLE.begin()
-BLE.setAdvertisedService(service);
-BLE.setLocalName(BLE_NAME);
-service.addCharacteristic(characteristic);
-BLE.addService(service);
-characteristic.writeValue(0);
-BLE.advertise();
+boolean BLEPeripheralWrapper::init(void) 
+{
+    !BLE.begin()
+    BLE.setAdvertisedService(service);
+    BLE.setLocalName(BLE_NAME);
+    service.addCharacteristic(characteristic);
+    BLE.addService(service);
+    characteristic.writeValue(0);
+    BLE.advertise();
+}
         \end{minted}
-        \caption{Initialisierung des BLE-Peripherals - BLEPeripheralWrapper::init(void) aus ble\_peripheral.cpp, ohne Logs.
+        \caption{Initialisierung des BLE-Peripherals, ohne Logs.
         }
         \label{lst:ble_code_1}
     \end{listing}
 
-    boolean BLEPeripheralWrapper::init(void)
+
+
+    \begin{listing}
+        \begin{minted}{cpp}
+void BLEPeripheralWrapper::update()
+{
+    BLE.poll();
+    if (millis() > ts_end) 
+    {
+        characteristic.writeValue(0);
+        ts_end = -1ul;
+    }
+}
+        \end{minted}
+        \caption{Update des BLE-Peripherals, ohne Logs.
+        }
+        \label{lst:ble_code_2}
+    \end{listing}
+
+    \begin{listing}
+        \begin{minted}{cpp}
+void BLEPeripheralWrapper::publishEvent(u_int8_t val)
+{
+    ts_end = millis() + BLE_ADVERTISING_DURATION_MS;
+    characteristic.writeValue(val);
+}
+        \end{minted}
+        \caption{Setzen eines Wertes der Characteristic des BLE-Peripherals, ohne Logs.
+        }
+        \label{lst:ble_code_3}
+    \end{listing}
+
+    \subsubsection{Empfänger (Central)}
+
+        \begin{minted}{cpp}
+BLE.scanForUuid(UUIDS[PERIPHERAL_ARDUINO_ID].service);
+        \end{minted}
+
+\begin{listing}
+    \begin{minted}{cpp}
+[...]
+    if (characteristic 
+                && characteristic.canSubscribe() 
+                && characteristic.subscribe())
+    {
+        while (peripheral.connected())
+        {
+            if (characteristic.valueUpdated())
+            {
+                characteristic.readValue(val);
+                if (val) leds.startAnimation(ANIMATION_BLUE_UP);
+                while (leds.animationActive()) leds.update();
+            }
+        }
+    }
+[...]
+    \end{minted}
+    \caption{Subscribe-Funktionalität skizziert.}
+    \label{lst:ble_code_4}
+\end{listing}
+
 
 
 \section{Füllstandsmessung}
