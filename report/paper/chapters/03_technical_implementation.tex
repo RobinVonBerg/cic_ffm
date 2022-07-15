@@ -2,23 +2,6 @@
 
 \section{Aufgabenbereiche}
 
-    % Welche Komponenten müssen technisch realisiert werden? 
-
-
-    % Siehe Technische Daten
-
-    % Beschreibung der prototypischen Realisierung, Vorgehensweise und
-    % Beschreibung einzelner Schritte
-
-
-    % Beschreibung der prototypischen Realisierung, Vorgehensweise und  Beschreibung einzelner Schritte
-    % Verweise auf das Projekt-Repository in dem weitere Projekt-Artefakte zu finden sind (s.u.).
-
-
-
-
-
-
     Die technischen Aspekte des Gerippten lassen sich grob in folgende Teilbereiche aufgliedern:
 
     \begin{itemize}
@@ -33,9 +16,10 @@
 
     In den nachfolgenden Kapiteln werden die zur Realisierung der verschiedenen Teilaspekte genutzten Komponenten beschrieben und diskutiert.
 
-\addtocontents{toc}{\protect\setcounter{tocdepth}{1}}
 
+\addtocontents{toc}{\protect\setcounter{tocdepth}{1}}
 \section{Mikrocontroller}
+
     \subsection{Diskussion}
         Als zentrale Steuerungskomponente ist die Wahl des Mikrocontrollers von zentraler Bedeutung für die technische Realisierung des Projekts. Die wichtigste Eigenschaft des Mikrocontrollers ist in diesem Projekt die generelle Verbreitung des Mikrocontrollers, da die Einarbeitungszeit sehr kurz ist und somit eine große Auswahl von Informationsquellen entscheidende Vorteile bringt. Dadurch stechen zwei Hersteller besonders heraus. Zum einen Arduino, die eine große Auswahl unterschiedlichster Mikrocontroller mit verschiedenstem Funktionsumfang anbieten und zum anderen Espressif, deren ESP32 Mikrocontroller eher als "Alleskönner" bezeichnet werden kann, da er im Vergleich zu den meisten Arduino Modellen wesentlich mehr und bessere Hardware bietet.
         Eine weitere Möglichkeit bietet die Nutzung des Einplatinencomputers Raspberry Pi, der einen weitaus größeren Funktionsumfang und wesentlich mehr Rechenleistung besitzt als ein Mikrocontroller. Die Nachteile des Raspberry Pi liegen in den hohen Anschaffungskosten und dem ebenfalls hohen Stromverbrauch. Im allgemeinen ist ein Raspberry Pi für dieses Projekt überdimensioniert, da ein Großteil des Mehrwertes den dieser gegenüber einem Mikrocontroller bietet in diesem Projekt keine Verwendung fände.\\
@@ -62,16 +46,57 @@
             \label{tab:compare_mics}
         \end{table}
 
-        Im Kapitel \ref{communications} wird erläutert, dass die Kommunikation über den Bluetooth beziehungsweise Bluetooth Low Energy Standard erfolgen soll. Somit bieten die WiFi Module, die der ESP32 und der Nano 33 IoT Mikrocontroller mitbringen keine weiteren Vorteile gegenüber dem Nano 33 BLE Mikrocontroller. Da dieser außerdem einen sehr geringen Stromverbrauch im Verhältnis zu seiner Leistungsfähigkeit aufweist, wurde dieser für die Verwendung in diesem Projekt ausgewählt.
+        Im Kapitel \ref{sec:communications} wird erläutert, dass die Kommunikation über den Bluetooth beziehungsweise Bluetooth Low Energy Standard erfolgen soll. Somit bieten die WiFi Module, die der ESP32 und der Nano 33 IoT Mikrocontroller mitbringen keine weiteren Vorteile gegenüber dem Nano 33 BLE Mikrocontroller. Da dieser außerdem einen sehr geringen Stromverbrauch im Verhältnis zu seiner Leistungsfähigkeit aufweist, wurde dieser für die Verwendung in diesem Projekt ausgewählt.
 
 
-    \subsection{Platform}
+    \subsection{Platform \& Code-Struktur}
 
-        Wie in der Arduino Welt üblich programmieren wir in der systemnahen Sprache C++.
-        Allerdings haben wir uns
+        Als Programmiersprache kommt das systemnahe C++ zum Einsatz, die klassische Wahl zur Programmierung von Arduinos.
+        Allerdings haben wir uns schon zu Beginn von der ArduinoIDE getrennt, da uns dort ein paar Quality of Life Features nicht zu Verfügung standen.
+        Als Alternative haben wir uns für das PlatformIO Plugin für Visual Studio Code entschieden. Unter den benötigten Features fällt die Möglichkeit Environments zu definieren und damit die Möglichkeit mehrere Main-Files für verschiedene Arduinos in der selben Codebasis zu halten. Je nach ausgewähltem Environment wird dann ein spezifizierte Main verwendet indem alle anderen exkludiert werden. Auch konnten wir Makros an den Compiler übergeben um Arduinos IDs zuzuweisen, die verwendet werden um unterschiedliche/einzigartige UUIDs zu verwenden. Im Codeausschnitt\,\ref{lst:platformio_1} ist beispielhaft das Environment \enquote{transmitter} zu finden, welches das Makro ARDUINO\_ID=3 definiert und die Dateien main\_receiver.cpp, main\_dtof.cpp und main\_rest.cpp beim kompilieren rausfiltert.
+        Zusätzlich bietet PlatformIO eine Definition von Abhängigkeiten auf Projektebene, so hatten wir immer die selben Versionen der Bibliotheken und zusätzlich werden diese Abhängigkeiten sowie die benötigte Software zum Arbeiten mit Nano 33 BLE Arduinos automatisch heruntergeladen.
+
+        \begin{listing}
+            \begin{minted}{ini}
+[env]
+build_flags = -Wall
+lib_ldf_mode = deep+
+platform = nordicnrf52
+board = nano33ble
+framework = arduino
+monitor_speed = 115200
+build_src_filter = +<*> -<.git/>
+lib_deps = 
+	adafruit/Adafruit NeoPixel@^1.10.4
+	sparkfun/SparkFun Qwiic TMF882X Library@^1.0.0
+	arduino-libraries/ArduinoBLE@^1.2.2
+	thijse/ArduinoLog@^1.1.1
+
+[env:transmitter]
+build_flags = 
+    ${env.build_flags}
+    -DARDUINO_ID=3
+build_src_filter =
+    ${env.build_src_filter}
+    -<main_receiver.cpp>
+    -<main_dtof.cpp>
+    -<main_test.cpp>
+upload_port = /dev/ttyACM0
+monitor_port = /dev/ttyACM0
+
+...
+            \end{minted}
+            \caption{Auszug aus der platformio.ini Datei}
+            \label{lst:platformio_1}
+        \end{listing}
+
+        Die Strukturierung des Codes ist aufgeteilt in jeweils hpp- und cpp-Datei für jede Komponente unseres Modell. So führen wir eine weitere Abstrahierungsebene ein und können unsere Main-Dateien übersichtlicher und vorallem kompakter gestalten, in dem die dort verwendeten Funktionen auf unsere Aufgaben angepasst sind.
+        Dabei ist die grundlegende Struktur einer Klasse, oft aufgeteilt in einen Konstruktor zum Setzen der benötigten Instanzvariablen, einer init()-Methode die im Setup aufgerufen wird, mehr oder wenig abstrahierte  Methoden, wie beispielsweise BLEPeripheralWrapper::publishEvent(u\_int8\_t val) die den Wert einer BLE-Characteristic aktualisiert und nach einem gewissen Intervall wieder zurücksetzt oder u\_int8\_t LevelMeter::getFillLevel(), die den aktuellen Füllstand zurückgibt, sowie in manchen Fällen update()-Methoden.
+        In diesen wurden alle Aufrufe vereint die periodisch erfolgen müssen.
 
 
 \section{Beleuchtung}
+
     \subsection{Diskussion}
 
         Um die Flaschen des Flaschenrings und die Rauten zu beleuchten benötigen wir LEDs. Es eröffnet sich herbei ein großer Raum von Optionen. LEDs sind zu unterscheiden in Größe und Form, in Helligkeit und der Art der Ansteuerung und zwischen RGB- und RGBW-LEDS.
@@ -88,9 +113,17 @@
 
         \subsubsection{Hardware}
 
+            \begin{figure}[H]
+                \begin{center}
+                    \includegraphics[width=10cm]{media/03_technical_implementation/picture_led_strip.jpg}
+                \end{center}
+                \caption{Eins der drei Segmente des Rauten LED-Strips.}
+                \label{fig:picture_led_strip}
+            \end{figure}
+
             Wir haben uns bei der Rautenbeleuchtung für 7 Meter Adafruit Mini Skinny NeoPixel Strips entschieden die mit 30 RGB LEDs pro Meter bestückt sind. So konnten wir den Strip in jeweils 20cm Segmenten unterteilen und jede Raute mit insgesamt 6 LEDs beleuchten.
             Der Strip ist mit 1 Ampere Verbrauch pro Meter angegeben, was die Wahl des 10 Ampere Netzteils begründet.
-            Die Strip-Segmenten haben wir dann wieder verbunden, in dem wir die drei Kontakte per Kabel an das nächste Segmenten weitergeleitet haben. Die Abstände zwischen den Strips und damit die Kabellängen sind abhängig von der Position am Modell.
+            Die Strip-Segmenten haben wir dann wieder verbunden, in dem wir die drei Kontakte per Kabel an das nächste Segmenten weitergeleitet haben. (Siehe Abbildung\,\ref{fig:picture_led_strip}) Die Abstände zwischen den Strips und damit die Kabellängen sind abhängig von der Position am Modell.
             Diese Aufteilung wird in Abbildung\,\ref{fig:led_wiring_rhombus} skizziert.
 
             \begin{figure}[H]
@@ -107,26 +140,32 @@
             \begin{figure}[H]
                 \begin{subfigure}[b]{0.5\textwidth}
                     \centering\includegraphics[width=\textwidth]{media/03_technical_implementation/leds_2.png}
-                    \caption{Pin-Belegung auf den verwendeten 6-Pin BreakOut-Boards für unsere NeoPixel SK6812RGBW. Gezogene Lötbrücken sind in grau eingezeichnet.}
+                    \caption{Pin-Belegung auf den verwendeten 6-Pin BreakOut-Boards. Gezogene Lötbrücken sind in grau eingezeichnet.}
                     \label{fig:pins_neopixel}
-                  \end{subfigure}\quad
-                  \begin{subfigure}[b]{0.5\textwidth}
+                \end{subfigure}\quad
+                \begin{subfigure}[b]{0.5\textwidth}
                     \centering\includegraphics[width=0.7\textwidth]{media/03_technical_implementation/picture_neopixel.jpg}
-                    \caption{NeoPixel RGBW LED SK6812RGBW}
+                    \caption{Ein Pixel.}
                     \label{fig:picture_neopixel}
-                  \end{subfigure}
+                \end{subfigure}
+                \caption{NeoPixel RGBW LED SK6812RGBW}
             \end{figure}
+
+            Für die Flaschenring LEDs haben wir Breakoutboards beschafft, auf die wir die LEDs gelötet haben. Diese Boards haben 6 Pins, während die LEDs 4 Pins haben. In der Skizze\,\ref{fig:pins_neopixel} haben wir gezeigt wie wir diese zwei Extra-Pins dafür verwenden, über Lötbrücken Strom und Ground im Kabelbaum an die nächsten LEDs weiterzuleiten. Diese zwei Kabelbäume hat vorallem Moritz aus der HCU gebaut, wohlmöglich eine der aufwendigsten Unterfange unseres Projekts. Den Aufbau eine solchen Kabelbaums ist in Abbildung\,\ref{fig:led_wiring_1} gezeigt, der fertige Kabelbaum in Abbildung\,\ref{fig:picture_bottle_leds}.
 
             \begin{figure}[H]
-                \begin{center}
-                    \includegraphics[width=7cm]{media/03_technical_implementation/leds_1.png}
-                \end{center}
-                \caption{Auszug eines Kabelbaums für die LEDs des Flaschenrings.}
-                \label{fig:led_wiring_1}
+                \begin{subfigure}[b]{0.5\textwidth}
+                    \centering\includegraphics[width=8cm]{media/03_technical_implementation/leds_1.png}
+                    \caption{Skizze des Aufbaus.}
+                    \label{fig:led_wiring_1}
+                \end{subfigure}\quad
+                \begin{subfigure}[b]{0.5\textwidth}
+                    \centering\includegraphics[width=6cm]{media/03_technical_implementation/picture_bottle_leds.jpg}
+                    \caption{Fertiggestellter Kabelbaum in Betrieb.}
+                    \label{fig:picture_bottle_leds}
+                \end{subfigure}
+                \caption{Kabelbäume der Flaschenring LEDs}
             \end{figure}
-      
-            Für die Flaschenring LEDs haben wir Breakoutboards beschafft, auf die wir die LEDs gelötet haben. Diese Boards haben 6 Pins, während die LEDs 4 Pins haben. In der Skizze\,\ref{fig:pins_neopixel} haben wir gezeigt wie wir diese zwei Extra-Pins dafür verwenden, über Lötbrücken Strom und Ground im Kabelbaum an die nächsten LEDs weiterzuleiten. Zwei dieser Kabelbäume hat vorallem Moritz aus der HCU gebaut, wohlmöglich eine der aufwendigsten Unterfange unseres Projekts. Den Aufbau eine solchen Kabelbaums ist in Abbildung\,\ref{fig:led_wiring_1} gezeigt.
-
 
             
         \subsubsection{Software}
@@ -171,7 +210,65 @@ void Adafruit_NeoPixel::show(void)
 
     \subsection{Diskussion}
 
+        Grundlegend sind Animationen Farbwerte über Zeit. Da wir jede LED einzeln ansprechen können, haben wir die größtmögliche Freiheiten in der Gestaltung.
+
+
+
+
     \subsection{Implementation}
+
+    \begin{listing}
+        \begin{minted}{cpp}
+[...]
+static PROGMEM uint32_t ANIMATIONS[AMOUNT_ANIMATIONS][AMOUNT_LED_LEVELS * FRAME_AMOUNT] = 
+{
+    {
+    512, 512, 512, 512, [...]
+    1792, 1792, 1792, 1792, [...]
+    18688, 29952, 44544, 62720, [...]
+    [...]
+    }
+}
+[...]
+        \end{minted}
+        \caption{Angepasster Auszug aus der animation.hpp}
+        \label{lst:animation_1}
+    \end{listing}
+
+    \begin{listing}
+        \begin{minted}{cpp}
+// Einschub aus neo_animation.hpp:
+const u_int8_t *height_map;
+
+[...]
+u_int8_t idx = (millis() - animation_data.ts_start) / 100;
+u_int32_t* ptr = animation_data.animation_ptr + (AMOUNT_LED_LAYERS * idx);
+for (uint16_t i = 0; i < num_pixels; i++)
+{
+    pxl.setPixelColor(i, pgm_read_dword(ptr + height_map[i]));
+}
+pxl.show();
+[...]
+
+        \end{minted}
+        \caption{Farbwerte zeitbasiert aus dem Flashspeicher lesen - Auszug aus der update()-Methode der neo\_animation.cpp}
+        \label{lst:animation_2}
+    \end{listing}
+
+    \begin{listing}
+        \begin{minted}{cpp}
+[...]
+if (millis() > (animation_data.ts_start + animation_data.duration)) 
+{
+    animation_data.state = OFF;
+    pxl.clear();
+    pxl.show();
+} 
+[...]
+        \end{minted}
+        \caption{Animation zeitbasiert beenden. - Auszug aus der update()-Methode der neo\_animation.cpp}
+        \label{lst:animation_3}
+    \end{listing}
 
 
 \section{Einwurferkennung}
@@ -274,7 +371,7 @@ void TMF8821::start(void)
 
         Die Methode read liest das Signal am entsprechenden Pin aus, negiert dieses und gibt das Ergebnis der Negation als bool Wert zurück. Die Negation wird durchgeführt, sodass ein Rückgabewert von true einer Detektion entspricht und ein Rückgabewert von false bedeutet, dass sich kein Objekt im Messbereich des Sensors befindet.
 
-\section{Kommunikation zwischen Endgeräten} \label{communications}
+\section{Kommunikation zwischen Endgeräten} \label{sec:communications}
 
     \subsection{Diskussion}
         Um die Kommunikation unter mehreren 
