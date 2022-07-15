@@ -92,7 +92,7 @@ void loop(void)
                         characteristic.readValue(val);
 
                         if (val) leds.startAnimation(ANIMATION_BLUE_UP);
-                        Log.infoln("Starting ANimation.");
+                        Log.infoln("Starting Animation.");
 
                         while (leds.animationActive()) leds.update();
                     }
