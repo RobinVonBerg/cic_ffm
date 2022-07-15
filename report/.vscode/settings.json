@@ -1,6 +1,7 @@
 {
     "cSpell.words": [
         "ACO",
+        "avr",
         "betahaus",
         "BLE",
         "bspw",
@@ -26,9 +27,12 @@
         "Hillen",
         "IKT",
         "Imager",
+        "Komponentenauswahl",
         "Maybritt",
         "Mombauer",
         "müllfreier",
+        "pgm",
+        "pgmspace",
         "Qwiic",
         "Rautenbeleuchtung",
         "Rautenstruktur",

@@ -49,7 +49,7 @@
         Im Kapitel \ref{sec:communications} wird erläutert, dass die Kommunikation über den Bluetooth beziehungsweise Bluetooth Low Energy Standard erfolgen soll. Somit bieten die WiFi Module, die der ESP32 und der Nano 33 IoT Mikrocontroller mitbringen keine weiteren Vorteile gegenüber dem Nano 33 BLE Mikrocontroller. Da dieser außerdem einen sehr geringen Stromverbrauch im Verhältnis zu seiner Leistungsfähigkeit aufweist, wurde dieser für die Verwendung in diesem Projekt ausgewählt.
 
 
-    \subsection{Platform \& Code-Struktur}
+    \subsection{Platform \& Code-Struktur}\label{sec:platform}
 
         Als Programmiersprache kommt das systemnahe C++ zum Einsatz, die klassische Wahl zur Programmierung von Arduinos.
         Allerdings haben wir uns schon zu Beginn von der ArduinoIDE getrennt, da uns dort ein paar Quality of Life Features nicht zu Verfügung standen.
@@ -211,11 +211,47 @@ void Adafruit_NeoPixel::show(void)
     \subsection{Diskussion}
 
         Grundlegend sind Animationen Farbwerte über Zeit. Da wir jede LED einzeln ansprechen können, haben wir die größtmögliche Freiheiten in der Gestaltung.
+        Es stellten sich nun mehrere Fragen. In welchem Format benötigen wir die Farbwerte? Wollen wir einen Wert für jede LED speichern, oder führen wir eine Abstraktionsebene ein. Wie lange sollen die Animationen spielen und in welcher Framerate?
 
+        Zwei Fragen ließen sich durchs Ausprobieren klären.
+        Animationen konnten wir mit einer Dauer von 2 Sekunden so darstellen, dass sie möglichst schnell, aber in einer organischen Bewegung umsetzbar waren und als Framerate hatten wir ab 10 Frames pro Sekunde ein flüssiges Ergebnis.
 
+        Des weiteren haben wir uns als Team auf eindimensionale Animationen verständigt die nur in der Vertikalen variieren, sodass wir, wie in Abbildung\,\ref{fig:led_wiring_rhombus} gezeigt, 21 (7 * 3) unterschiedliche Höhenwerte pro Frame benötigen.
 
+        Zusätzlich mussten noch zwei technische Aspekte bedacht werden.
+        Animationen sollten zeitbasiert sein und nicht abhängig davon, dass das Aufrufen der Methoden in einem gleichmäßigem Rhythmus geschehen ablaufen.
 
     \subsection{Implementation}
+
+        Um möglichst wenige Berechnung während der Laufzeit ausführen zu müssen, haben wir die Farbwerte von vornherein berechnet und in die konkatenierte 32-Bit Form transformiert. 
+        So benötigen wir für eine Sekunde 10 Frames mit jeweils 21 32 Bit Werten.
+        Ziehen wir in Betracht, dass der Arduino Nano 33 BLE 256KB RAM besitzt wären das 38 Sekunden Animationen die wir im Speicher halten könnten, ausgenommen die RAM-Nutzung der anderen Komponenten.
+        Auch wenn wir damit für unseren geplanten Umfang an Animationen auskommen würden, haben wir uns dazu entschieden um weitere Erweiterungen umsetzen zu können, die Animationsdaten in den Flash-Speicher des Chips zu schreiben. Dieser beträgt beim Arduino Nano 33 BLE 1MB.
+        Konstante Daten mit dem Schlüsselwort PROGMEM in der Deklaration werden beim Flash-Prozess in den Flash-Speicher geschrieben.
+        Um Daten aus dem Flash-Speicher zu lesen gibt es eine Reihe von Methoden die als Parameter den Pointer nehmen und unterschiedliche Byte-Größen lesen. Beispiele sind pgm\_read\_float() und pgm\_read\_word(). Alle diese Funktionalitäten werden von der Bibliothek \enquote{<avr/pgmspace.h>} bereitgestellt.\\
+        Bei Animationen mit linearen Farbverläufen, wie wir sie verwenden, muss man zusätzlich beachten, dass ein linearer Verlauf zwischen 0 und 255 vom Menschen nicht als linear wahrgenommen wird. Hierfür gibt es die sogenannte Gamma-Korrektion, eine nichtlineare Funktion die als Array mit 256 Werten implementiert ist. Diese bildet jeden Wert auf einen korrigierten ab, sodass das Endprodukt wieder linear wahrgenommen wird.
+        Diese Korrektion wenden wir aber ebenfalls schon beim Erstellen der Animationen an.
+
+
+    \vspace{1em}
+    \framebox[\textwidth]{
+        \begin{minipage}{\textwidth-1em}
+            \vspace{.4em}
+            \textbf{Skript generate\_animation.py}
+            \\[1em]            
+            Das Generieren der Animationen haben wir in einem Python-Skript modelliert, welches eine Animation mit einer beliebigen Farbe in dem für das Arduino-Programm benötigte Format ausgibt. Es lässt ein Lichtimpuls von unten nach oben wandern und passt die anliegenden Werte sowie den Start und das Ende so an, dass es keine ruckartigen Bewegungen gibt.\\
+            Es ist dabei modular aufgebaut, sodass weitere Animationen hinzugefügt werden können.
+            \vspace{.4em}
+        \end{minipage}
+    }
+    \vspace{1em}
+
+    Ein Ausschnitt der fertigen Animation ist im Codebeispiel\,\ref{lst:animation_1} zu sehen. \\
+
+    Während wir bei den Farbwerten der Animationen mit 21 Werten arbeiten, müssen wir die 96 LEDs ebenfalls den 21 Höhen zuweisen.
+    Das haben wir mit einer einfachen Heightmap realisiert, ein Array das für jeden Index und damit jede LED ein Höhenwert mitbekommt.
+    So kann später eine effiziente Berechnung des benötigten Farbwerts erfolgen.\\
+
 
     \begin{listing}
         \begin{minted}{cpp}
@@ -234,6 +270,11 @@ static PROGMEM uint32_t ANIMATIONS[AMOUNT_ANIMATIONS][AMOUNT_LED_LEVELS * FRAME_
         \caption{Angepasster Auszug aus der animation.hpp}
         \label{lst:animation_1}
     \end{listing}
+
+    Beim Start einer Animation wird nun ein Zeitstempel mithilfe der Methode millis() gespeichert. Jeder Aufruf der im Codeausschnitt\,\ref{lst:animation_2} skizzierten update()-Methode berechnet sich anhand dieses Wertes das Zeit-Delta seit Beginn der Animation, um den aktuellen Frame zu berechnen. Das Array mit den Farbwerten im Flashspeicher besitzt für jede Animation 21 * \enquote{Anzahl Frames} Farbwerte, wobei die ersten 21 Werte dem Frame 0, die nächsten 21 Werte dem Frame 1 zugewiesen sind etc.
+    So berechnet sich die aktuelle Position der Animation wie in Zeile 6 zu sehen mit der Addition mit 21 * \enquote{Aktueller Frame}.
+    Ausgehend von diesem Pointer wird nun über jede LED iteriert, wobei die Position aus der Height-Map gelesen wird und diese auf den Pointer addiert wird, um den korrekten Farbwert aus dem Flashspeicher zu lesen.
+    Bevor diese Berechnung stattfindet wird, wie in Codebeispiel\,\ref{lst:animation_3}, überprüft, ob die aktuelle Animation vollendet ist.
 
     \begin{listing}
         \begin{minted}{cpp}
@@ -374,14 +415,56 @@ void TMF8821::start(void)
 \section{Kommunikation zwischen Endgeräten} \label{sec:communications}
 
     \subsection{Diskussion}
-        Um die Kommunikation unter mehreren 
+        Um die Kommunikation zwischen mehreren Mikrocontrollern zu realisieren müssen wir vorallem die Faktoren der Reichweite, Kompatibilität, des Energieaufwands und der Art Kommunikation berücksichtigen. Die Datenrate ist in unserem Anwendungsfall zu vernachlässigen, da wir nur die Animationsevents übertragen müssen.
+
+        \begin{table}[H]
+            \caption{Vergleich verschiedener Kommunikationsprotokollen}
+            \centering
+            \begin{tabularx}{\textwidth}{  X | X | X | X }
+                \textbf{Bluetooth} & \textbf{Bluetooth Low Energy} & \textbf{Wi‑Fi 4 802.11n} & \textbf{Wi-Fi HaLow/IEEE802.11ah} \\ [0.5ex] \hline\hline
+                Mittlerer Energieverbrauch &
+                Geringer Energieverbrauch &
+                Hoher Energieverbrauch &
+                Mittlere Energieverbrauch \\
+                &&\\
+                Geringe Reichweite (bis zu 30m) &
+                Mittlere Reichweite (bis zu 100m) &
+                Mittlere Reichweite (bis zu 90m) &
+                Hohe Reichweite (bis zu 1km) \\
+                &&\\
+                In vielen Mikrocontrollern integriert &
+                In vielen Mikrocontrollern integriert &
+                In vielen Mikrocontrollern integriert &
+                Kaum auf dem Markt vertreten - teuer \\
+                &&\\
+                Peer To Peer &
+                Server - Client &
+                Server - Client &
+                Server - Client \\
+                &&\\
+            \end{tabularx}
+            \label{tab:compare_mics}
+        \end{table}
+
+        Mit dieser Übersicht haben wir uns schlussendlich für Bluetooth Low Energy entschieden, was uns schlussendlich auch zum Arduino Nano 33 BLE geführt hat, einer der wenigen Arduinos mit BLE 5.0.
 
     \subsection{Implementation}
 
+    BLE verwendet eine Server-Client-Kommunikation, wobei wir bei Servern von Peripherals reden und bei Clients von Centrals.
+    Ein Peripheral kann mehrere Services anbieten, welche wiederum mehrere Characteristics besitzen. Metaphorisch kann ein Service als Pinnwand und die Characteristics als Notizzettel beschrieben werden, die von den Centrals gelesen und/oder beschrieben werden können. Zusätzlich können Centrals auch auf Änderungen einer Characteristic horchen.
+
+    Mit der bereitgestellte BLE Bibliothek von Arduino konnten wir unseren Mesh Ansatz leider nicht verfolgen, jeden Mikrocontroller eine doppelte Rolle, Peripheral und Central gleichzeitig, zuzuweisen. Der in anderen Implementation realisierbare Ansatz wird auf den Nano 33 BLE leider nicht unterstützt. So haben wir uns für unser Modell auf eine klassische Server-Client-Kommunikation verständigt, wobei unser Hauptmodell in diesem Fall nur Events an unsere Rauten-Modelle sendet.
+
+
     \subsubsection{Sender (Peripheral)}
 
-    \begin{listing}
-        \begin{minted}{cpp}
+        Auf der Seite des Peripherals müssen wir das BLE-Modul selbst initialisieren und ein Service und ein Characteristic bereitstellen.
+        Service und Characteristic benötigen dafür jeweils eine UUID, eine einzigartige Adresse, über die sie in unserem Fall auch von den Centrals gefunden werden. Diese sind als Konstanten im Code hinterlegt und werden durch das Makro ARDUINO\_ID je nach Environment verwendet.
+        Dabei ist vorgegeben, dass der Peripheral die ARDUINO\_ID 1 besitzen muss, da diese verwendet wird, um nach jenem Peripheral zu suchen.
+        Das Characteristic wird auf den von uns als Standardwert definierten Wert 0 gesetzt. Dieser Ablauf ist im Codebeispiel\,\ref{lst:ble_code_1} zu sehen.\\
+
+        \begin{listing}
+            \begin{minted}{cpp}
 // Einschub aus neo_animation.hpp:
 BLEService service;
 BLEUnsignedCharCharacteristic characteristic;
@@ -396,16 +479,35 @@ boolean BLEPeripheralWrapper::init(void)
     characteristic.writeValue(0);
     BLE.advertise();
 }
-        \end{minted}
-        \caption{Initialisierung des BLE-Peripherals, ohne Logs.
-        }
-        \label{lst:ble_code_1}
-    \end{listing}
+            \end{minted}
+            \caption{Initialisierung des BLE-Peripherals, ohne Logs.
+            }
+            \label{lst:ble_code_1}
+        \end{listing}
 
+        Wurde nun ein Einwurf detektiert und soll ein Event in die Characteristic geschrieben werden, so wird dies nur für ein bestimmten Zeitraum getan, bevor der Standardwert 0 erneut gesetzt wird.
+        Das ist nötig um keine erneute Animationen der Centrals zu verursachen, falls zwischenzeitlich ein Verbindungsabbruch vorliegt.
+        Daher wird sich hier ein Zeitstempel berechnet, an dem der Reset vollzogen werden soll.
+        Daraufhin wird der übergebene Wert publiziert.
+        (Siehe Codebeispiel\,\ref{lst:ble_code_3})\\
 
+        \begin{listing}
+            \begin{minted}{cpp}
+void BLEPeripheralWrapper::publishEvent(u_int8_t val)
+{
+    ts_end = millis() + BLE_ADVERTISING_DURATION_MS;
+    characteristic.writeValue(val);
+}
+            \end{minted}
+            \caption{Setzen eines Wertes der Characteristic des BLE-Peripherals, ohne Logs.
+            }
+            \label{lst:ble_code_3}
+        \end{listing}
 
-    \begin{listing}
-        \begin{minted}{cpp}
+        Für das BLE-Modul benötigen wir, wie in Kapitel\,\ref{sec:platform} erwähnt, eine update()-Methode. Diese wird benötigt um Interaktionen der Centrals zu bearbeiten. In unserer Implementation\,\ref{lst:ble_code_2} wird hier zusätzlich der Timer überprüft und im Zweifelsfall der Standardwert zurückgesetzt.
+
+        \begin{listing}
+            \begin{minted}{cpp}
 void BLEPeripheralWrapper::update()
 {
     BLE.poll();
@@ -415,30 +517,23 @@ void BLEPeripheralWrapper::update()
         ts_end = -1ul;
     }
 }
-        \end{minted}
-        \caption{Update des BLE-Peripherals, ohne Logs.
-        }
-        \label{lst:ble_code_2}
-    \end{listing}
+            \end{minted}
+            \caption{Update des BLE-Peripherals, ohne Logs.
+            }
+            \label{lst:ble_code_2}
+        \end{listing}
 
-    \begin{listing}
-        \begin{minted}{cpp}
-void BLEPeripheralWrapper::publishEvent(u_int8_t val)
-{
-    ts_end = millis() + BLE_ADVERTISING_DURATION_MS;
-    characteristic.writeValue(val);
-}
-        \end{minted}
-        \caption{Setzen eines Wertes der Characteristic des BLE-Peripherals, ohne Logs.
-        }
-        \label{lst:ble_code_3}
-    \end{listing}
 
     \subsubsection{Empfänger (Central)}
+
+        Auf der Seite der Empfänger, der Centrals, wird, solange dieser nicht gefunden wurde, nach dem Peripheral gescannt. Dafür wird die oben erwähnte UUID verwendet.
 
         \begin{minted}{cpp}
 BLE.scanForUuid(UUIDS[PERIPHERAL_ARDUINO_ID].service);
         \end{minted}
+
+        Ab dem Moment ab dem der Central fündig wurde, werden verschiedene Stufen des Kontakts aufgebaut, es wird der Service und daraufhin das Characteristic gesucht. Der darauf folgendene Teil ist im Codebeispiel\,\ref{lst:ble_code_4} gezeigt. Hier abonniert der Central die Characteristic um die Möglichkeit zu bekommen zu überprüfen, ob sich der gesetzte Wert verändert hat.
+        Solange die Verbindung nicht abbricht und der Wert sich nicht ändert, wird weiterhin in der Schleife verblieben. Ab dem Moment an dem ein neuere Wert, der ungleich dem Standardwert ist, gelesen wird, wird eine Animation gestartet und angezeigt.
 
 \begin{listing}
     \begin{minted}{cpp}
@@ -462,8 +557,6 @@ BLE.scanForUuid(UUIDS[PERIPHERAL_ARDUINO_ID].service);
     \caption{Subscribe-Funktionalität skizziert.}
     \label{lst:ble_code_4}
 \end{listing}
-
-
 
 \section{Füllstandsmessung}
     \subsection{Diskussion}
