@@ -378,6 +378,28 @@ void TMF8821::start(void)
 
     \subsection{Implementation}
 
+    \begin{listing}
+        \begin{minted}{cpp}
+// Einschub aus neo_animation.hpp:
+BLEService service;
+BLEUnsignedCharCharacteristic characteristic;
+
+!BLE.begin()
+BLE.setAdvertisedService(service);
+BLE.setLocalName(BLE_NAME);
+service.addCharacteristic(characteristic);
+BLE.addService(service);
+characteristic.writeValue(0);
+BLE.advertise();
+        \end{minted}
+        \caption{Initialisierung des BLE-Peripherals - BLEPeripheralWrapper::init(void) aus ble\_peripheral.cpp, ohne Logs.
+        }
+        \label{lst:ble_code_1}
+    \end{listing}
+
+    boolean BLEPeripheralWrapper::init(void)
+
+
 \section{Füllstandsmessung}
     \subsection{Diskussion}
         Zum Messen des Füllstandes soll ein Sensor, oder eventuell auch mehrere, an der Unterseite des Tonnendeckels befestigt werden. Bei der Füllstandsmessung ist zu beachten, dass er Füllstand an unterschiedlichen Positionen in der Tonne eine unterschiedliche Höhe aufweisen kann. Somit existiert kein einzelner korrekter Füllstandswert, wie es bei einer Flüssigkeit der Fall wäre. Daraus ergeben sich verschiedene Möglichkeiten für die Ermittlung eines Füllstandswertes. Eine dieser Möglichkeiten wäre, mehrere Messungen an unterschiedlichen Punkten durchzuführen und daraus einen Mittelwert zu bilden oder den Punkt mit dem höchsten Füllstand als aktuellen Wert anzunehmen. Eine weitere Möglichkeit besteht darin lediglich eine Messung an einer fixen Position durchzuführen. Diese Methode besitzt zwar eine gewisse Fehleranfälligkeit, da der Füllstand an einem anderen Punkt höher sein könnte, liegt der Messpunkt jedoch mittig, sollte in den meisten Fällen dort auch der aktuell höchste Füllstand ermittelt werden, da sich die Oberfläche des Mülls in der Tonne häufig zu einem sehr flachen Kegel auftürmt. Der klare Vorteil der Umsetzung mit einem Sensor liegt jedoch in der Einfachheit der Umsetzung dieser Methode, da nur ein Sensor benötigt wird und nicht mehrere Sensordaten miteinander verrechnet werden müssen.\\
